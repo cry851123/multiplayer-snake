@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="贪吃蛇">
+<meta name="theme-color" content="#0b1018">
+<meta name="format-detection" content="telephone=no">
+<title>贪吃蛇 · 多人版</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body class="tabs-off">
+<div id="app">
+
+  <!-- ==================== 注册 / 登录 ==================== -->
+  <section id="view-register" class="view active">
+    <div class="register-wrap">
+      <div class="brand">
+        <h1>贪吃蛇</h1>
+        <p>注册一次就够了 —— 这台设备以后打开自动进入你的账号。<br>
+           注册后会得到一个 <b>查看码</b>，朋友用它就能实时看你玩。</p>
+      </div>
+      <div class="card">
+        <div class="card-title">起个昵称</div>
+        <div class="row">
+          <input id="regName" type="text" maxlength="12" placeholder="最多 12 个字" autocomplete="off">
+          <button id="regBtn" class="btn">注册</button>
+        </div>
+        <div id="regMsg" class="msg"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">已经有账号，换设备登录</div>
+        <div class="row">
+          <input id="regToken" type="text" placeholder="粘贴你的令牌" autocomplete="off">
+          <button id="tokenLoginBtn" class="btn ghost">登录</button>
+        </div>
+        <div class="hint">令牌在「我」那一页可以复制。清掉浏览器数据后，只能靠令牌找回账号。</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 玩 ==================== -->
+  <section id="view-play" class="view">
+    <div class="play-col">
+      <div class="bar">
+        <div class="who">
+          <span class="name" id="playName">-</span>
+          <span class="code-chip" id="playCode">------</span>
+          <span class="badge hidden" id="playWatchers">👀 0 人在看</span>
+        </div>
+        <div class="scores">
+          <div class="stat"><span class="k">得分</span><span class="v" id="playScore">0</span></div>
+          <div class="stat"><span class="k">最高</span><span class="v" id="playBest">0</span></div>
+        </div>
+      </div>
+      <div class="board" id="board">
+        <canvas id="gameCanvas" width="400" height="400" tabindex="0" aria-label="贪吃蛇棋盘"></canvas>
+      </div>
+    </div>
+    <div class="play-side">
+      <div class="dpad" id="dpad" role="group" aria-label="方向控制">
+        <button class="up"    type="button" data-dir="up"    aria-label="上">▲</button>
+        <button class="left"  type="button" data-dir="left"  aria-label="左">◀</button>
+        <button class="down"  type="button" data-dir="down"  aria-label="下">▼</button>
+        <button class="right" type="button" data-dir="right" aria-label="右">▶</button>
+      </div>
+      <div class="speed">
+        <span class="lb">速度</span>
+        <div class="seg" id="seg" role="group" aria-label="速度档位"></div>
+      </div>
+      <div class="controls">
+        <button id="btnToggle" class="btn grow" type="button">开始</button>
+        <button id="btnRestart" class="btn ghost grow" type="button">重新开始</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 我 ==================== -->
+  <section id="view-me" class="view">
+    <div class="panel">
+      <div class="card">
+        <div class="card-title">我的查看码</div>
+        <div class="code-big" id="meCode">------</div>
+        <div class="hint">把这串码发给朋友，他输入后就能<b>实时看到你在玩</b>，还能看到你的历史战绩。这串码不是密码，但只有你想给的人才知道。</div>
+        <div class="row">
+          <button id="copyCode" class="btn small grow" type="button">复制查看码</button>
+          <button id="shareCode" class="btn ghost small grow" type="button">分享…</button>
+        </div>
+        <div id="meMsg" class="msg"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">我的战绩</div>
+        <div class="stat-grid">
+          <div class="stat"><span class="k">最高</span><span class="v" id="meBest">0</span></div>
+          <div class="stat"><span class="k">总局数</span><span class="v" id="meGames">0</span></div>
+          <div class="stat"><span class="k">平均</span><span class="v" id="meAvg">0</span></div>
+          <div class="stat"><span class="k">总吃</span><span class="v" id="meTotal">0</span></div>
+        </div>
+        <div class="card-title">最近几局</div>
+        <div class="hist" id="meHistory"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">关注我的人</div>
+        <div class="list" id="meFollowers"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">操作设置</div>
+        <div class="row">
+          <button id="padToggle" class="btn ghost small grow" type="button">方向盘：自动</button>
+        </div>
+        <div class="hint">方向盘占地方时可以关掉，改成只在棋盘上滑动来转向（自动 = 小屏手机不显示、平板和横屏显示）。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">换设备 / 备份令牌</div>
+        <div class="hint">这是你账号的唯一凭证，复制保存好。换手机或清掉浏览器数据后，用它登录就能找回账号。</div>
+        <div class="token-box" id="meToken"></div>
+        <button id="copyToken" class="btn ghost small" type="button">复制令牌</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 排行 / 好友 ==================== -->
+  <section id="view-rank" class="view">
+    <div class="panel">
+      <div class="card">
+        <div class="card-title">添加好友</div>
+        <div class="row">
+          <input id="addCode" type="text" maxlength="6" placeholder="输入对方的 6 位查看码" autocomplete="off">
+          <button id="addFriendBtn" class="btn small">关注</button>
+        </div>
+        <div id="rankMsg" class="msg"></div>
+        <div class="hint">关注是单向的，不需要对方同意。对方能看到「谁关注了我」。</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">排行榜 · 我 + 我关注的人</div>
+        <div class="list" id="rankList"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">我关注的人</div>
+        <div class="list" id="friendList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 观战 ==================== -->
+  <section id="view-watch" class="view">
+    <div class="bar">
+      <button id="watchBack" class="icon-btn" type="button">‹ 返回</button>
+      <div class="who">
+        <span class="name" id="watchName">-</span>
+        <span class="code-chip" id="watchCode">------</span>
+      </div>
+      <div class="live-dot" id="watchDot"><span></span><em id="watchDotText">连接中</em></div>
+    </div>
+    <div class="board" id="watchBoard">
+      <canvas id="watchCanvas" width="400" height="400" aria-label="观战棋盘"></canvas>
+    </div>
+    <div class="panel">
+      <div class="stat-grid">
+        <div class="stat"><span class="k">当前</span><span class="v" id="watchScore">0</span></div>
+        <div class="stat"><span class="k">最高</span><span class="v" id="watchBest">0</span></div>
+        <div class="stat"><span class="k">局数</span><span class="v" id="watchGames">0</span></div>
+        <div class="stat"><span class="k">平均</span><span class="v" id="watchAvg">0</span></div>
+      </div>
+      <div class="row">
+        <button id="watchFollow" class="btn small grow" type="button">加为好友</button>
+      </div>
+      <div id="watchMsg" class="msg"></div>
+      <div class="card">
+        <div class="card-title">最近战绩</div>
+        <div class="hist" id="watchHistory"></div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<nav class="tabbar hidden" id="tabbar">
+  <button data-tab="play" class="on" type="button"><i>🎮</i>玩</button>
+  <button data-tab="rank" type="button"><i>🏆</i>排行</button>
+  <button data-tab="me" type="button"><i>👤</i>我</button>
+</nav>
+
+<script src="/game.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

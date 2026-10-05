@@ -1,0 +1,14 @@
+{
+  "name": "snake-multiplayer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "贪吃蛇多人版：账号、查看码、实时观战、好友排行榜。零依赖。",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node selftest.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
